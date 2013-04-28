@@ -1,0 +1,61 @@
+% facteur
+/tableauPrd [(x-2) (x+1)] def
+/tableauRac [(2) (-1)] def
+/tableauSgn [ [(-) (-) (+)] [(-) (+) (+)] ] def
+
+/Longtab {tableauPrd length pstack} def
+/sgn 3 def
+%{tableauSgn 1 get length} def
+/tabsgn 1 def
+
+tableauPrd aload
+pop
+0 500 moveto
+
+
+%
+%
+% en 36 hauteur de 40
+%
+%
+%
+%
+
+/verticalBar {
+    gsave 10 -10 rmoveto 0 40 rlineto 10 -30 rmoveto stroke grestore
+} def
+
+/signe{
+show
+20 0 rmoveto
+gsave
+    10 -10 rmoveto
+    0 40 rlineto
+    10 -30 rmoveto
+    stroke
+grestore} def
+
+Longtab
+{
+    gsave
+    % ajout du facteur
+    /Monospace findfont
+    36 scalefont
+    setfont
+    show
+    verticalBar
+    20 0 rmoveto
+    /temp {tableauSgn 0 get} def
+    temp aload
+    pop
+    sgn
+    {
+        signe
+    }repeat
+    grestore
+    0 -50 rmoveto
+} repeat
+
+
+1.2 setlinewidth
+stroke

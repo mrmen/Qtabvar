@@ -1,0 +1,125 @@
+% facteur
+/tableauPrd [(x+2) (x+1)] def
+/tableauRac [(3) (9)] def
+/tableauSgn [ [(-) (-) (+)] [(-) (+) (+)] ] def
+/tableauFin [ (+) (-) (+)] def
+
+/Longtab {tableauPrd length} def
+/sgn 3 def
+%{tableauSgn 1 get length} def
+/tabsgn 1 def
+/racine {tableauRac length} def
+
+
+tableauPrd aload
+pop
+100 500 moveto
+
+
+%
+%
+% en 36 hauteur de 40
+%
+%
+%
+%
+
+/verticalBar {
+    gsave 10 -16 rmoveto 0 50 rlineto 10 -40 rmoveto stroke grestore
+} def
+
+/signe{
+show
+10 0 rmoveto
+gsave
+    10 -16 rmoveto
+    0 50 rlineto
+    16 -40 rmoveto
+    stroke
+grestore
+10 0 rmoveto} def
+
+
+% en-tete
+gsave
+% ajout du facteur
+/Monospace findfont
+36 scalefont
+setfont
+(x  ) show
+verticalBar
+5 0 rmoveto
+tableauRac aload
+pop
+40 0 rmoveto
+show
+40 0 rmoveto
+show
+grestore
+% passage a la ligne
+gsave
+0 35 rmoveto
+260 0 rlineto stroke
+grestore
+0 -50 rmoveto
+
+
+Longtab
+{
+    gsave
+    % ajout du facteur
+    /Monospace findfont
+    36 scalefont
+    setfont
+    show
+    verticalBar
+    20 0 rmoveto
+    % charge le tableau de signe
+    /temp {tableauSgn 0 get} def
+    temp aload
+    pop
+    sgn
+    {
+	10 0 rmoveto
+        signe
+	10 0 rmoveto
+    }repeat
+    grestore
+    % passage a la ligne
+    gsave
+    0 35 rmoveto
+    260 0 rlineto stroke
+    grestore
+    0 -50 rmoveto
+
+    % derniere ligne  
+} repeat
+
+gsave
+/Monospace findfont
+36 scalefont
+setfont
+(P  ) show
+verticalBar
+20 0 rmoveto
+tableauFin aload
+pop
+sgn
+{
+    10 0 rmoveto
+    signe
+    10 0 rmoveto
+}repeat
+grestore
+gsave
+0 35 rmoveto
+260 0 rlineto stroke
+grestore
+0 -50 rmoveto
+gsave
+0 35 rmoveto
+260 0 rlineto stroke
+grestore
+
+1.2 setlinewidth
+stroke
