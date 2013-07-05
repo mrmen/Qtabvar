@@ -1,0 +1,201 @@
+
+0.5 dup scale
+% nombre de produits
+/Longtab {tableauPrd length} def
+
+/var 0 def
+
+/longueur 21.5 def
+
+% compteurs
+/compteur {Longtab 1 sub} def
+/isRacine {1} def
+
+/maxstore 0 def
+
+/hauteur 50 def
+
+
+% barre verticale
+/verticalBar {
+    gsave% sauve la position
+    0 -16 rmoveto
+    0 50 rlineto
+    0 -40 rmoveto
+    stroke% affiche
+    grestore% restaure la position
+} def
+
+
+/infini {
+    gsave
+    longueur 0.15 21.5 div mul dup scale
+    10 setlinewidth
+    50 50 rmoveto
+    currentpoint translate
+    50 0 rmoveto
+    0 0 50 0 360 arc
+    100 0 rmoveto
+    100 0 50 0 360 arc
+    stroke
+    grestore
+    43 0 rmoveto
+} def
+
+
+
+/cro{
+    0 -20 rmoveto
+    hauteur hauteur rlineto
+    gsave
+    0.5 dup scale
+    currentpoint translate
+    0 45 sub rotate
+    10 0 rlineto
+    120 rotate
+    20 0 rlineto
+    120 rotate
+    20 0 rlineto
+    120 rotate
+    10 0 rlineto
+    fill
+    grestore
+    0 -30 rmoveto
+}def
+
+/dec{
+    0 30 rmoveto
+    hauteur 0 hauteur sub rlineto
+    gsave
+    0.5 dup scale
+    currentpoint translate
+    225 rotate
+    10 0 rlineto
+    120 rotate
+    20 0 rlineto
+    120 rotate
+    20 0 rlineto
+    120 rotate
+    10 0 rlineto
+    fill
+    grestore
+    0 20 rmoveto
+}def
+
+% placer un signe
+/printvaleur{
+    dup
+    (-i) eq
+    {
+        (-) show
+        infini
+        pop
+    }{
+        dup
+        (+i) eq
+        {
+            (+) show
+            infini
+            pop
+        }
+        {
+            show
+        }ifelse
+    }ifelse
+
+    gsave
+    % si fin de ligne ajout barre verticale
+    compteurElt sgn 1 sub eq
+    {
+        0 -16 rmoveto
+        0 50 rlineto
+        0 -40 rmoveto
+        maxstore 0 eq
+        {
+            /currentvalue [ currentpoint ] cvx def
+            /maxstore 1 def
+        }if
+
+    }if
+    stroke
+    grestore
+    compteurElt sgn 1 sub ne
+    {
+        compteur 1 eq
+        {
+            tableauVar var get
+            (d) eq
+            {dec}if
+            tableauVar var get
+            (c) eq
+            {cro}if
+            /var var 1 add def
+        }
+        {
+            hauteur 0 rmoveto
+        }
+        ifelse
+    }if
+    /compteurElt compteurElt 1 add def
+}
+def
+
+% definition des fontes
+/Courier findfont
+36 scalefont
+setfont
+
+1.2 setlinewidth
+
+% mvt initial
+100 500 moveto
+
+% chargement des produits
+tableauPrd aload
+pop % supprime le nom du tableau
+
+
+Longtab
+{
+    gsave
+    show
+    verticalBar
+
+    /temp {tableauVal compteur get} def
+    temp aload
+    pop
+    /compteurElt 0 def
+    sgn
+    {
+        printvaleur
+    }repeat
+    grestore
+
+
+    % passage a la ligne
+    gsave
+    0 35 rmoveto
+    compteur 2 eq
+    {currentvalue pop 100 sub 0 rlineto stroke}if
+    compteur 3 eq
+    {currentvalue pop 100 sub 0 rlineto stroke}if
+    grestore
+    0 -50 rmoveto
+
+    /compteur compteur 1 sub def
+
+} repeat
+
+
+
+% derniere ligne
+gsave
+0 35 rmoveto
+currentvalue pop 100 sub 0 rlineto stroke
+grestore
+
+% barre de gauche
+100 500 36 add moveto
+0 0 Longtab 50 mul sub rlineto
+
+stroke

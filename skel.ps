@@ -1,0 +1,206 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% nombre de produits
+/Longtab {tableauPrd length} def
+% nombre de racines
+/racine {tableauRac length} def
+% nombre de signes a  placer
+/sgn {racine 1 add} def
+
+% longueur d'un char
+%/longueur 21.5 def% en 36
+/longueur 10.75 def%en 18
+
+% compteurs
+/compteur {Longtab 1 sub} def
+/isRacine {1} def
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%
+%% definition de certaines macros
+%%
+% barre verticale
+/verticalBar {
+    gsave% sauve la position
+    0 -16 rmoveto
+    0 50 rlineto
+    0 -40 rmoveto
+    stroke% affiche
+    grestore% restaure la position
+} def
+
+% symbole infini
+/infini {
+    gsave
+    longueur 0.15 21.5 div mul dup scale
+    10 setlinewidth
+    50 50 rmoveto
+    currentpoint translate
+    50 0 rmoveto
+    0 0 50 0 360 arc
+    100 0 rmoveto
+    100 0 50 0 360 arc
+    stroke
+    grestore
+    43 0 rmoveto
+} def
+
+% placer un signe
+/signe{
+    % genere un espacement d'une demi racine avant le signe
+    maxRac 2 div longueur mul 0 rmoveto
+    % affiche le signe
+    show
+    % genere un espacement d'une demi racine avant le signe
+    maxRac 2 div longueur mul 0 rmoveto
+
+    gsave
+    % test si isRacine
+    % == dans la premiere ligne du tableau
+    isRacine 1 eq
+    {
+        % test si derniere colonne
+        compteurRacine sgn 1 sub eq
+        {
+            % rien a afficher, juste un barre
+	    %%
+	    0 longueur sub 0 rmoveto
+	    (+ ) show
+	    infini
+	    0 2 longueur mul sub 0 rmoveto
+	    %%
+            0 -16 rmoveto
+            0 50 rlineto
+            0 -40 rmoveto
+            stroke	    
+        }
+        {
+            % affiche la racine courante avec compteurRacine
+            tableauRac compteurRacine get
+            tableauDep compteurRacine get cvi
+            % ajoute un deplacement d'une demi longueur de la racine vers l'arriere
+            0 longueur 2 div sub mul 0 rmoveto
+            show
+        }
+        ifelse
+    }
+    {
+
+        /tabTemp tableau0 compteur get def
+        /tempvalue tabTemp compteurRacine get def
+        % teste les differentes barres verticales
+        % barre vide
+	compteurRacine sgn 1 sub eq{
+	    3 longueur mul 0 rmoveto
+	}if
+        tempvalue (0) eq
+        {
+            0 -16 rmoveto
+            0 50 rlineto
+            0 -40 rmoveto
+        }if
+        % zero barré
+        tempvalue (1) eq
+        {
+            0 -16 rmoveto
+            0 50 rlineto
+            0 -40 rmoveto
+            0 longueur 2 div sub 6 rmoveto (O) show
+        }if
+        % double barre
+        tempvalue (2) eq
+        {
+            -3 -16 rmoveto
+            0 50 rlineto
+            0 -40 rmoveto
+            6 0 rmoveto
+            0 -10 rmoveto
+            0 50 rlineto
+        }if
+
+        stroke
+    }
+    ifelse
+
+    /compteurRacine compteurRacine 1 add def
+
+    grestore
+
+}
+def
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% definition des fontes
+% redéfinir longueur si besoin
+/Courier findfont
+18 scalefont
+setfont
+
+1.2 setlinewidth
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+% mvt initial
+10 500 moveto
+
+% chargement des produits
+tableauPrd aload
+pop % supprime le nom du tableau
+
+Longtab
+{
+    gsave
+    % ajout du facteur
+    show
+    verticalBar
+    isRacine 1 eq{
+	(- ) show
+	infini
+	0 3 longueur mul sub 0 rmoveto
+    }{
+	3 longueur mul 0 rmoveto
+    }ifelse
+%%
+%%
+    /temp {tableauSgn compteur get} def
+    temp aload
+    pop
+%%
+%%
+% charge le tableau de signe
+    /compteurRacine 0 def
+    /compteurZeros 0 def
+    sgn
+    {
+        signe
+    }repeat
+    /isRacine 0 def
+    grestore
+    % passage a la ligne
+    gsave
+    0 35 rmoveto
+    nbCharLine longueur mul 0 rlineto stroke
+    grestore
+    0 -50 rmoveto
+
+    /compteur compteur 1 sub def
+
+} repeat
+
+% derniere ligne
+gsave
+0 35 rmoveto
+nbCharLine longueur mul 0 rlineto stroke
+grestore
+
+% barre de gauche
+10 500 36 add moveto
+0 0 Longtab 50 mul sub rlineto
+stroke

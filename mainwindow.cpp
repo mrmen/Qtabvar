@@ -1,10 +1,29 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
+#include "PScode.h"
+#include "LaTeXcode.h"
+
+#include <stdio.h>
+#include <unistd.h>
+
 #include <iostream>
+#include <fstream>
+#include <sstream>
 #include <QTableView>
 #include <QStandardItem>
 #include <QTextEdit>
 #include <QShortcut>
+#include <QFile>
+#include <QFileDialog>
+#include <QMessageBox>
+
+#include <QTextCodec>
+
+#ifdef __APPLE__
+// to access bundle
+#include "CoreFoundation/CoreFoundation.h"
+// don't forget to add -framework CoreFoundation inside Makefile
+#endif
 
 
 MainWindow::MainWindow(QWidget *parent) :
@@ -14,14 +33,22 @@ MainWindow::MainWindow(QWidget *parent) :
   ui->setupUi(this);
   
 //   connect widgets
-  connect(ui->updateTabular,SIGNAL(clicked()), this, SLOT(updateTabular()));
+// from an old version
+//  connect(ui->updateTabular,SIGNAL(clicked()), this, SLOT(updateTabular()));
   connect(ui->getCode, SIGNAL(clicked()), this, SLOT(getCodeAsList()));
+  connect(ui->getPS, SIGNAL(clicked()), this, SLOT(getCodeAsPS()));
   connect(ui->effacerButton, SIGNAL(clicked()), this, SLOT(removeCode()));
-  connect(ui->actionAdapter_le_tableau, SIGNAL(triggered()), this, SLOT(updateTabular()));
-  connect(ui->actionG_n_rer_le_tableau, SIGNAL(triggered()), this, SLOT(getCodeAsList()));
-  connect(ui->hauteurSpinbox, SIGNAL(valueChanged(int)), this, SLOT(updateTabular()));
+  connect(ui->exporterButton, SIGNAL(clicked()), this, SLOT(exportPS()));
+  connect(ui->actionAdapter_le_tableau, SIGNAL(triggered()), this,
+          SLOT(updateTabular()));
+  connect(ui->actionG_n_rer_le_tableau, SIGNAL(triggered()), this,
+          SLOT(getCodeAsList()));
+  connect(ui->actionCr_dits, SIGNAL(triggered()), this, SLOT(showCredits()));
+  connect(ui->hauteurSpinbox, SIGNAL(valueChanged(int)), this,
+          SLOT(updateTabular()));
   ui->hauteurSpinbox->setMinimum(1);
-  connect(ui->longueurSpinbox, SIGNAL(valueChanged(int)), this, SLOT(updateTabular()));
+  connect(ui->longueurSpinbox, SIGNAL(valueChanged(int)), this,
+          SLOT(updateTabular()));
   ui->longueurSpinbox->setMinimum(1);
 
   // create one-one tabular
@@ -30,7 +57,6 @@ MainWindow::MainWindow(QWidget *parent) :
   // update ui to have the value
   updateTabular();
 }
-
 
 
 /*
@@ -48,12 +74,14 @@ void MainWindow::updateTabular(){
   /*
    * store old value into string tabular
    */
-  QString stringTable[oldHauteur][oldLongueur]; // create string tabular to get current printed values
+  QString stringTable[oldHauteur][oldLongueur]; // create string tabular to get
+                                                // current printed values
   for(int i=0; i<oldHauteur; i++){
     for(int j=0; j<oldLongueur; j++){
       // do the stuff tu get 
       // you must use mode to acces data
-      stringTable[i][j] = ui->tableau->model()->data(ui->tableau->model()->index(i,j)).toString();
+      stringTable[i][j] = ui->tableau->model()->data(
+            ui->tableau->model()->index(i,j)).toString();
     }
   }
 
@@ -80,7 +108,8 @@ void MainWindow::updateTabular(){
   for(int i=0; i<std::min(oldHauteur, hauteur); i++){
     for(int j=0; j<std::min(oldLongueur, longueur); j++){
       // use model to setData
-      ui->tableau->model()->setData(ui->tableau->model()->index(i,j),stringTable[i][j]);
+      ui->tableau->model()->setData(
+            ui->tableau->model()->index(i,j),stringTable[i][j]);
     }
   }
 
@@ -97,91 +126,43 @@ void MainWindow::removeCode(){
 }
 
 
+
+
+/******************************************************************************/
+
 /*
- * getCodeAsList
- * export tabular as LaTeX code
+ * exportPS
+ * export ps code into a file on Desktop
  */
-void MainWindow::getCodeAsList(){
-//  int variations = ui->variationBox->checkState();
-  /*
-   * Clear code Tab
-   */
-  removeCode();
 
-  /*
-   * get the current dimension of the tabular
-   */
-  int hauteur = ui->hauteurSpinbox->value();
-  int longueur = ui->longueurSpinbox->value();
-
-  
-  /*
-   * get the whole code
-   */
-  QString stringTable[hauteur][longueur]; // create string table to get code 
-  for(int i=0; i<hauteur; i++){
-    for(int j=0; j<longueur; j++){
-      // use model to access data
-      stringTable[i][j] = ui->tableau->model()->data(ui->tableau->model()->index(i,j)).toString();
-    }
-  }
-  
-  /*
-   * Create the LaTeX code
-   */
-  QString line = "\\begin{array}{|c|";
-  // how many column are needed
-  for(int j=0; j<longueur-1; j++){
-    line = line+"c";
-  }
-  line+="|}"; 
-  // add commented LaTeX preamble
-  ui->codeEdit->append("% \\usepackage{tikz, tikzrput}"); // tikzrput can be grab at
-  // http://altermundus.com/pages/tkz/tikzrput/index.html
-  // 0 scratch LaTeX code
-  ui->codeEdit->append("% \\newcommand{\\zr}{\\vline");
-  ui->codeEdit->append("%     \\begin{tikzpicture}%");
-  ui->codeEdit->append("%     \\rput[B](-0.5\\arrayrulewidth,0){$0$};%");
-  ui->codeEdit->append("% \\end{tikzpicture}}");
-  // increase arrow LaTeX code
-  ui->codeEdit->append("% \\newcommand{\\cr}{");
-  ui->codeEdit->append("%     \\begin{tikzpicture}%");
-  ui->codeEdit->append("%     \\draw[->] (-0.5,-0.5) -- (0.5,0.5)%");
-  ui->codeEdit->append("% \\end{tikzpicture}}");
-  // decrease arrow LaTeX code
-  ui->codeEdit->append("% \\newcommand{\\de}{");
-  ui->codeEdit->append("%     \\begin{tikzpicture}%");
-  ui->codeEdit->append("%     \\draw[->] (-0.5,0.5) -- (0.5,-0.5)%");
-  ui->codeEdit->append("% \\end{tikzpicture}}");
-  // add empty line
-  ui->codeEdit->append("");
-  
-  // fill the code widget
-  ui->codeEdit->append(line);
-  ui->codeEdit->append("\\hline"); // add hline at the end of line
-  for(int i=0; i<hauteur; i++){
-    QString line = "";
-    for(int j=0; j<longueur; j++){
-      // call doReplaceStuff to obtain nice LaTeX code
-      line = line+doReplaceStuff(stringTable[i][j]);
-      // test if it's last column and add & or 
-      if (j!=longueur-1){
-        line = line + " & ";
-      }
-      else{
-        line = line + " \\\\";
-      }
-    }
-    // paste it
-    ui->codeEdit->append(line);
-    // paste \hline
-    ui->codeEdit->append("\\hline");
-  }
-  //close array and paste
-  line = "\\end{array}";
-  ui->codeEdit->append(line);
+void MainWindow::exportPS(){
+    QString fichier = QFileDialog::getSaveFileName(this,
+                                                   "Exporter PostScript",
+                                                   QString(),
+                                                   "Fichier PostScript (*.ps)");
+    QFile file(fichier);
+    if (!file.open(QIODevice::WriteOnly | QIODevice::Text))
+            return;
+    file.write(ui->codeEdit->toPlainText().toAscii());
+    file.close();
+    // wait for file close
+    // this works for unix and linux
+#ifdef __APPLE__
+    while(file.handle()!=-1)
+        1;
+    // add nice PATH for ps2eps works
+    // should be done differently...
+    execl("export", "PATH=$PATH:/usr/local/bin:/usr/texbin","ps2eps", "-f", fichier.toStdString().c_str(), "&", NULL);
+#elif __linux__
+    while(file.handle()!=-1)
+        1;
+    // add nice PATH for ps2eps works
+    // should be done differently...
+    QString cmd = "/usr/bin/ps2eps -f " + fichier + " &";
+    //    execl("/usr/bin/ps2eps", "-f", fichier.toStdString().c_str(), "&", NULL);
+    system(cmd.toStdString().c_str());
+#endif
 }
-
 
 /*
  * doReplaceStuff
@@ -201,6 +182,20 @@ QString MainWindow::doReplaceStuff(QString line){
 }
 
 
+/*
+ * showCredits
+ * show some infos and changelog (TODO)
+ */
+void MainWindow::showCredits(){
+    QTextCodec::setCodecForCStrings(QTextCodec::codecForName("UTF-8"));
+    QMessageBox::about(this,
+  "À Propos",
+  "QTabvar Version 0.99\n"\
+  "Application permettant de réaliser des tableaux de signes/variations.\n"\
+  "\n"\
+  "Documentation disponible sur http://qtabvar.mrmen.fr (TODO)\n"\
+		       );
+}
 
 MainWindow::~MainWindow()
 {

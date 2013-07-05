@@ -1,0 +1,43 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+<head>
+    <title>awesome API documentation</title>
+</head>
+<body>
+
+
+<h1><center>QTabVar</center></h1>
+
+QTabVar is a software written in C++ using Qt. The current goal is to allow
+user edit mathematics tabular using GUI.
+
+At this moment, QTabVar can export tabular as PostScript or LaTeX code. Both
+of them can be edited using the "code" tab.
+
+<h2>LaTeX code</h2>
+
+LaTeX code use tikzrput.sty file which can be obtained on <a href=http://www.altermundus.com>altermundus website</a>.
+
+<h2>PostScript code</h2>
+
+PostScript code use two files (skel.ps and skel-variation.ps) to generate output.
+
+<table cellspacing="50">
+<tr>
+<td><img src="signe.jpeg" border="0" align="center" title="Creation d'un tableau de signe"></img></td>
+<td><img src="signePS.jpeg" border="0" align="center" title="Resultat"></img></td>
+</tr>
+</table>
+
+
+<table cellspacing="50">
+<tr>
+<td><img src="variations.jpeg" border="0" align="center" title="Creation d'un tableau de variations"></img></td>
+<td><img src="variationsPS.jpeg" border="0" align="center" title="Resultat"></img></td>
+</tr>
+</table>
+
+</body>
+</html>

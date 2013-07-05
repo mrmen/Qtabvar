@@ -21,7 +21,12 @@ private:
 private slots:
     void updateTabular();
     void getCodeAsList();
+    void getCodeAsPS();
+    void PSSigne();
+    void PSVariation();
+    void exportPS();
     void removeCode();
+    void showCredits();
     QString doReplaceStuff(QString);
 };
 
